@@ -1,0 +1,40 @@
+version: '3'
+
+services:
+  nginx:
+    build:
+      context: .
+      dockerfile: Dockerfile-nginx
+    volumes:
+      - ./task/:/var/www/symfony
+    ports:
+      - 8001:80
+    networks:
+      - symfony
+  php:
+    build:
+      context: .
+      dockerfile: Dockerfile-php
+    environment:
+      APP_ENV: dev
+      DATABASE_URL: mysql://root:root@mysql:3306/symfony_db?serverVersion=5.7
+    volumes:
+      - ./task/:/var/www/symfony/
+    networks:
+      - symfony
+    depends_on:
+      - mysql
+  mysql:
+    image: mysql:8.3
+    command: ['--character-set-server=utf8mb4', '--collation-server=utf8mb4_unicode_ci', '--mysql-native-password=ON']
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+    ports:
+      - 3306:3306
+    volumes:
+      - ./db:/var/lib/mysql
+    networks:
+      - symfony
+
+networks:
+  symfony:
